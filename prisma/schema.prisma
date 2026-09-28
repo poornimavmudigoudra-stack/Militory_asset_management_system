@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  BASE_COMMANDER
+  LOGISTICS_OFFICER
+}
+enum MovementType {
+  OPENING
+  PURCHASE
+  TRANSFER_IN
+  TRANSFER_OUT
+  ASSIGNMENT
+  EXPENDITURE
+}
+enum TransferStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+model Base {
+  id String @id @default(cuid())
+  name String @unique
+  code String @unique
+  users User[]
+  balances InventoryBalance[]
+  purchases Purchase[]
+  outgoing Transfer[] @relation("FromBase")
+  incoming Transfer[] @relation("ToBase")
+  assignments Assignment[]
+  movements Movement[]
+}
+model User {
+  id String @id @default(cuid())
+  name String
+  email String @unique
+  passwordHash String
+  role Role
+  baseId String?
+  base Base? @relation(fields: [baseId], references: [id])
+  assignments Assignment[]
+  auditLogs AuditLog[]
+  createdAt DateTime @default(now())
+}
+model Asset {
+  id String @id @default(cuid())
+  name String
+  type String
+  sku String @unique
+  unit String @default("units")
+  balances InventoryBalance[]
+  purchases Purchase[]
+  transfers Transfer[]
+  assignments Assignment[]
+  movements Movement[]
+}
+model InventoryBalance {
+  id String @id @default(cuid())
+  baseId String
+  assetId String
+  quantity Int @default(0)
+  base Base @relation(fields: [baseId], references: [id])
+  asset Asset @relation(fields: [assetId], references: [id])
+  @@unique([baseId, assetId])
+}
+model Purchase {
+  id String @id @default(cuid())
+  baseId String
+  assetId String
+  quantity Int
+  unitCost Float?
+  purchasedAt DateTime
+  reference String?
+  base Base @relation(fields: [baseId], references: [id])
+  asset Asset @relation(fields: [assetId], references: [id])
+  createdAt DateTime @default(now())
+}
+model Transfer {
+  id String @id @default(cuid())
+  fromBaseId String
+  toBaseId String
+  assetId String
+  quantity Int
+  status TransferStatus @default(COMPLETED)
+  reference String?
+  transferredAt DateTime
+  fromBase Base @relation("FromBase", fields: [fromBaseId], references: [id])
+  toBase Base @relation("ToBase", fields: [toBaseId], references: [id])
+  asset Asset @relation(fields: [assetId], references: [id])
+  createdAt DateTime @default(now())
+}
+model Assignment {
+  id String @id @default(cuid())
+  baseId String
+  assetId String
+  assigneeId String?
+  assigneeName String
+  quantity Int
+  assignedAt DateTime
+  returnedAt DateTime?
+  notes String?
+  base Base @relation(fields: [baseId], references: [id])
+  asset Asset @relation(fields: [assetId], references: [id])
+  assignee User? @relation(fields: [assigneeId], references: [id])
+  expenditures Expenditure[]
+  createdAt DateTime @default(now())
+}
+model Expenditure {
+  id String @id @default(cuid())
+  assignmentId String
+  quantity Int
+  reason String
+  expendedAt DateTime
+  assignment Assignment @relation(fields: [assignmentId], references: [id])
+  createdAt DateTime @default(now())
+}
+model Movement {
+  id String @id @default(cuid())
+  type MovementType
+  baseId String
+  assetId String
+  quantity Int
+  occurredAt DateTime
+  referenceType String?
+  referenceId String?
+  base Base @relation(fields: [baseId], references: [id])
+  asset Asset @relation(fields: [assetId], references: [id])
+  @@index([baseId, assetId, occurredAt])
+}
+model AuditLog {
+  id String @id @default(cuid())
+  userId String?
+  action String
+  entityType String
+  entityId String?
+  method String
+  path String
+  ipAddress String?
+  metadata String?
+  createdAt DateTime @default(now())
+  user User? @relation(fields: [userId], references: [id])
+  @@index([createdAt])
+}
