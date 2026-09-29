@@ -21,13 +21,24 @@ A full-stack framework for tracking military asset inventory, movement, assignme
 ## Run locally
 
 ```powershell
-Copy-Item .env.example .env
+Copy-Item backend/.env.example backend/.env
 npm.cmd install
 npm.cmd run db:push
 npm.cmd run dev
 ```
 
 Open [http://localhost:5173](http://localhost:5173).
+
+## Project layout and separate deployment
+
+- `frontend/` is an independent React/Vite static application.
+- `backend/` is an independent Express/Prisma API application.
+- `backend/prisma/` owns the schema and local SQLite database.
+
+Each application has its own `package.json` and `.env.example`, so it can be
+installed and deployed independently. Set the frontend's `VITE_API_URL` to the
+public backend URL, and set the backend's `CORS_ORIGIN` to the public frontend
+URL. The root scripts remain available for running both applications locally.
 
 > In development, the API uses an administrator identity when no bearer token is supplied. Production requires a signed JWT and a secure `JWT_SECRET`.
 

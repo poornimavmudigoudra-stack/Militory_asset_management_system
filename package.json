@@ -4,12 +4,12 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently -n api,web -c green,cyan \"tsx watch server/index.ts\" \"vite\"",
-    "build": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json && vite build --config vite.config.ts",
-    "start": "prisma db push --skip-generate && tsx server/index.ts",
+    "dev": "concurrently -n api,web -c green,cyan \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "build": "npm run build --prefix backend && npm run build --prefix frontend",
+    "start": "npm run start --prefix backend",
     "postinstall": "prisma generate",
     "test": "vitest run",
-    "db:push": "prisma db push",
+    "db:push": "npm run db:push --prefix backend",
     "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {

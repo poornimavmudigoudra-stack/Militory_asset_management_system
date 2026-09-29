@@ -1,11 +1,12 @@
 services:
   - type: web
-    name: military-asset-management-system
+    name: military-assets-api
     runtime: node
     plan: free
-    buildCommand: npm install && npm run build
+    rootDir: backend
+    buildCommand: npm install
     startCommand: npm start
-    healthCheckPath: /
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_VERSION
         value: 22.22.0
@@ -15,3 +16,17 @@ services:
         value: file:/tmp/military-assets.db
       - key: JWT_SECRET
         generateValue: true
+
+  - type: web
+    name: military-assets-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        value: https://military-assets-api.onrender.com
