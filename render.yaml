@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: military-asset-management-system
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: 22.22.0
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: file:/tmp/military-assets.db
+      - key: JWT_SECRET
+        generateValue: true

@@ -3,6 +3,7 @@ import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import { PrismaClient, Role } from '@prisma/client';
 import { z } from 'zod';
+import path from 'node:path';
 
 const prisma=new PrismaClient();
 const app=express();
@@ -34,5 +35,12 @@ const assignmentSchema=z.object({baseId:z.string(),assetId:z.string(),assigneeNa
 app.get('/api/assignments',permit('ADMIN','BASE_COMMANDER'),async(req,res,next)=>{try{const baseId=req.actor!.role==='BASE_COMMANDER'?req.actor!.baseId:req.query.baseId as string|undefined;res.json(await prisma.assignment.findMany({where:{...(baseId&&{baseId})},include:{asset:true,base:true,expenditures:true},orderBy:{assignedAt:'desc'}}))}catch(e){next(e)}});
 app.post('/api/assignments',permit('ADMIN','BASE_COMMANDER'),async(req,res,next)=>{try{const d=assignmentSchema.parse(req.body);if(!enforceBase(d.baseId,req.actor!))return res.status(403).json({error:'Base access denied'});const item=await prisma.$transaction(async tx=>{const stock=await tx.inventoryBalance.findUnique({where:{baseId_assetId:{baseId:d.baseId,assetId:d.assetId}}});if(!stock||stock.quantity<d.quantity)throw new Error('INSUFFICIENT_STOCK');const a=await tx.assignment.create({data:d});await tx.inventoryBalance.update({where:{baseId_assetId:{baseId:d.baseId,assetId:d.assetId}},data:{quantity:{decrement:d.quantity}}});await tx.movement.create({data:{type:'ASSIGNMENT',baseId:d.baseId,assetId:d.assetId,quantity:-d.quantity,occurredAt:d.assignedAt,referenceType:'Assignment',referenceId:a.id}});return a});await audit(req,'ASSIGNMENT_CREATED','Assignment',item.id,d);res.status(201).json(item)}catch(e){next(e)}});
 app.get('/api/audit',permit('ADMIN'),async(_req,res,next)=>{try{res.json(await prisma.auditLog.findMany({take:200,orderBy:{createdAt:'desc'},include:{user:{select:{name:true,email:true}}}}))}catch(e){next(e)}});
+
+// In production, the same Render service hosts the compiled React client.
+// The wildcard sends client-side routes back to index.html for React Router.
+const clientDist=path.resolve(process.cwd(),'dist');
+app.use(express.static(clientDist));
+app.get('/{*splat}',(_req,res)=>res.sendFile(path.join(clientDist,'index.html')));
+
 app.use((err:unknown,_req:Request,res:Response,_next:NextFunction)=>{if(err instanceof z.ZodError)return res.status(400).json({error:'Validation failed',details:err.issues});if(err instanceof Error&&err.message==='INSUFFICIENT_STOCK')return res.status(409).json({error:'Insufficient stock'});console.error(err);res.status(500).json({error:'Internal server error'})});
 const port=Number(process.env.PORT||4000);app.listen(port,()=>console.log(`API listening on http://localhost:${port}`));

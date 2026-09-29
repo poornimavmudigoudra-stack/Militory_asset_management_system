@@ -4,3 +4,5 @@ dist
 dev.db
 dev.db-journal
 *.tsbuildinfo
+tmp/
+output/
