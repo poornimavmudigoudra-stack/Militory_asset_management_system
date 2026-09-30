@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "tsx watch server.ts",
     "build": "tsc --noEmit",
-    "start": "prisma db push --skip-generate && tsx server.ts",
+    "start": "tsx server.ts",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts"
