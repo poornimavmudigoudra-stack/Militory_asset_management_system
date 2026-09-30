@@ -10,7 +10,7 @@
     "postinstall": "prisma generate",
     "test": "vitest run",
     "db:push": "npm run db:push --prefix backend",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "npm run db:seed --prefix backend"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",
