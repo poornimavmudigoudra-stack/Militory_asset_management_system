@@ -27,13 +27,14 @@ Authorization: Bearer <token>
 ```
 
 User records, password hashes, roles, and audit events are persisted through
-Prisma in the SQLite database configured by `DATABASE_URL`. The Prisma schema
+Prisma in the MongoDB Atlas database configured by `DATABASE_URL`. The Prisma schema
 remains in `prisma/schema.prisma` so standard Prisma commands work normally.
 
 ## Environment variables
 
-- `DATABASE_URL`: Prisma database connection string.
+- `DATABASE_URL`: MongoDB Atlas connection string. Configure it as a secret in the deployment platform.
 - `JWT_SECRET`: secret used to sign access tokens; use a long random value.
 - `PORT`: API port, defaulting to `4000`.
+- `CORS_ORIGIN`: comma-separated frontend origins allowed to call the API.
 
 Use `.env.example` as the safe template. Never commit the real `.env` file.

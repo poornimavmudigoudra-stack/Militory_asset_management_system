@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
@@ -27,7 +27,7 @@ enum TransferStatus {
 }
 
 model Base {
-  id String @id @default(cuid())
+  id String @id @default(auto()) @map("_id") @db.ObjectId
   name String @unique
   code String @unique
   users User[]
@@ -39,19 +39,19 @@ model Base {
   movements Movement[]
 }
 model User {
-  id String @id @default(cuid())
+  id String @id @default(auto()) @map("_id") @db.ObjectId
   name String
   email String @unique
   passwordHash String
   role Role
-  baseId String?
+  baseId String? @db.ObjectId
   base Base? @relation(fields: [baseId], references: [id])
   assignments Assignment[]
   auditLogs AuditLog[]
   createdAt DateTime @default(now())
 }
 model Asset {
-  id String @id @default(cuid())
+  id String @id @default(auto()) @map("_id") @db.ObjectId
   name String
   type String
   sku String @unique
@@ -63,18 +63,18 @@ model Asset {
   movements Movement[]
 }
 model InventoryBalance {
-  id String @id @default(cuid())
-  baseId String
-  assetId String
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  baseId String @db.ObjectId
+  assetId String @db.ObjectId
   quantity Int @default(0)
   base Base @relation(fields: [baseId], references: [id])
   asset Asset @relation(fields: [assetId], references: [id])
   @@unique([baseId, assetId])
 }
 model Purchase {
-  id String @id @default(cuid())
-  baseId String
-  assetId String
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  baseId String @db.ObjectId
+  assetId String @db.ObjectId
   quantity Int
   unitCost Float?
   purchasedAt DateTime
@@ -84,10 +84,10 @@ model Purchase {
   createdAt DateTime @default(now())
 }
 model Transfer {
-  id String @id @default(cuid())
-  fromBaseId String
-  toBaseId String
-  assetId String
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  fromBaseId String @db.ObjectId
+  toBaseId String @db.ObjectId
+  assetId String @db.ObjectId
   quantity Int
   status TransferStatus @default(COMPLETED)
   reference String?
@@ -98,10 +98,10 @@ model Transfer {
   createdAt DateTime @default(now())
 }
 model Assignment {
-  id String @id @default(cuid())
-  baseId String
-  assetId String
-  assigneeId String?
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  baseId String @db.ObjectId
+  assetId String @db.ObjectId
+  assigneeId String? @db.ObjectId
   assigneeName String
   quantity Int
   assignedAt DateTime
@@ -114,8 +114,8 @@ model Assignment {
   createdAt DateTime @default(now())
 }
 model Expenditure {
-  id String @id @default(cuid())
-  assignmentId String
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  assignmentId String @db.ObjectId
   quantity Int
   reason String
   expendedAt DateTime
@@ -123,10 +123,10 @@ model Expenditure {
   createdAt DateTime @default(now())
 }
 model Movement {
-  id String @id @default(cuid())
+  id String @id @default(auto()) @map("_id") @db.ObjectId
   type MovementType
-  baseId String
-  assetId String
+  baseId String @db.ObjectId
+  assetId String @db.ObjectId
   quantity Int
   occurredAt DateTime
   referenceType String?
@@ -136,8 +136,8 @@ model Movement {
   @@index([baseId, assetId, occurredAt])
 }
 model AuditLog {
-  id String @id @default(cuid())
-  userId String?
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String? @db.ObjectId
   action String
   entityType String
   entityId String?

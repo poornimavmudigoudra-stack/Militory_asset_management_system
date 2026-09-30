@@ -33,7 +33,7 @@ Open [http://localhost:5173](http://localhost:5173).
 
 - `frontend/` is an independent React/Vite static application.
 - `backend/` is an independent Express/Prisma API application.
-- `backend/prisma/` owns the schema and local SQLite database.
+- `backend/prisma/` owns the MongoDB data model.
 
 Each application has its own `package.json` and `.env.example`, so it can be
 installed and deployed independently. Set the frontend's `VITE_API_URL` to the
@@ -46,7 +46,7 @@ URL. The root scripts remain available for running both applications locally.
 
 - **React + TypeScript + Vite** provides a fast, typed, and responsive client.
 - **Express + Zod** provides REST endpoints, request validation, centralized errors, JWT authentication, and role middleware.
-- **Prisma + SQLite** provides a zero-setup relational development database. PostgreSQL is recommended for production concurrency, backups, and operational scale.
+- **Prisma + MongoDB Atlas** provides persistent cloud storage for users, inventory, movements, and audit records.
 
 The immutable `Movement` ledger is the reporting source for opening balance, closing balance, and net movement. `InventoryBalance` is a transactional projection for fast stock validation. Transfers create matching OUT and IN entries in one database transaction. `AuditLog` records who performed each operation, when it occurred, and which entity was affected.
 
