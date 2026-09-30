@@ -13,7 +13,7 @@ if(existsSync(localEnvPath))process.loadEnvFile(localEnvPath);
 
 const prisma=new PrismaClient();
 const app=express();
-const allowedOrigins=process.env.CORS_ORIGIN?.split(',').map(value=>value.trim()).filter(Boolean);
+const allowedOrigins=process.env.CORS_ORIGIN?.split(',').map(value=>value.trim().replace(/\/+$/,'')).filter(Boolean);
 app.use(cors({origin:allowedOrigins?.length?allowedOrigins:true})); app.use(express.json());
 type Actor={id:string;role:Role;baseId?:string};
 declare global { namespace Express { interface Request { actor?:Actor } } }
